@@ -2,10 +2,13 @@ const video = document.getElementById('video');
 const gallery = document.getElementById('gallery');
 const identityInput = document.getElementById('identity');
 const statusDiv = document.getElementById('status-message');
+const hostPanel = document.querySelector('.host-panel');
 
 // buttons
 const joinRoomButton = document.getElementById('button-join');
 const leaveRoomButton = document.getElementById('button-leave');
+const toggleButton = document.getElementById('button-panel-toggle');
+const closePanelButton = document.getElementById('button-panel-close');
 
 const ROOM_NAME = 'my-video-chat';
 let videoRoom;
@@ -60,10 +63,14 @@ const joinRoom = async (event) => {
 
     localParticipantDiv.appendChild(identityDiv);
     leaveRoomButton.disabled = false;
+    toggleButton.disabled = false;
 
     videoRoom.participants.forEach(participantConnected);
     videoRoom.on('participantConnected', participantConnected);
     videoRoom.on('participantDisconnected', participantDisconnected);
+
+    // If the localParticipant is the one who has been removed, reset their UI to a non-joined state
+    videoRoom.localParticipant.on('disconnected', leaveRoom);
 
   } catch (error) {
     console.log(error);
@@ -99,6 +106,12 @@ const leaveRoom = () => {
   joinRoomButton.disabled = false;
   leaveRoomButton.disabled = true;
   identityInput.disabled = false;
+  toggleButton.disabled = true;
+
+  // Close the host panel if the local participant leaves the call
+  if (hostPanel.classList.contains('open')) {
+    hostPanel.classList.toggle('open');
+  }
 }
 
 const participantConnected = (participant) => {
@@ -139,9 +152,73 @@ const participantDisconnected = (participant) => {
   participants.find(div => div.dataset.sid === participant.sid).remove();
 };
 
+const openHostPanel = async () => {
+  // Get the empty participants list
+  const participants = document.getElementById('participants');
+
+  videoRoom.participants.forEach(participant => {
+    const participantDetails = document.createElement('li');
+    participantDetails.classList.add('participantDetails')
+
+    participantDetails.setAttribute('data-sid', participant.sid);
+    participantDetails.innerText = participant.identity;
+
+    const participantDeleteButton = document.createElement('button');
+    participantDeleteButton.innerText = 'Remove';
+    participantDetails.appendChild(participantDeleteButton);
+    participantDeleteButton.addEventListener('click', removeParticipant);
+
+    participants.appendChild(participantDetails);
+  })
+
+  hostPanel.appendChild(participants);
+}
+
+const closeHostPanel = () => {
+  const participants = document.getElementById('participants');
+
+  if (participants.children) {
+    for (child of participants.children) {child.remove()};
+  }
+}
+
+const removeParticipant = async (event) => {
+  event.preventDefault();
+
+  try {
+    const response = await fetch('/removeParticipant', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        'roomSid': videoRoom.sid,
+        'participantSid': event.target.parentElement.dataset.sid
+      })
+    });
+
+    const data = await response.json();
+    const participantDetails = Array.from(document.getElementsByClassName('participantDetails'));
+    participantDetails.find(participant => participant.dataset.sid === data.removedSid).remove();
+
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 // Show the participant a preview of their video
 addLocalVideo();
 
 // Event listeners
 joinRoomButton.addEventListener('click', joinRoom);
 leaveRoomButton.addEventListener('click', leaveRoom);
+
+toggleButton.addEventListener('click', () => {
+  hostPanel.classList.toggle('open');
+  hostPanel.classList.contains('open') ?  openHostPanel() : closeHostPanel()
+});
+
+closePanelButton.addEventListener('click', () => {
+  hostPanel.classList.toggle('open');
+  closeHostPanel();
+});

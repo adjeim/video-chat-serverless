@@ -85,3 +85,48 @@ button:hover, button:active, button:disabled {
   text-align: center;
   color: rgb(225, 73, 73);
 }
+
+.host-panel {
+  position: fixed;
+  right: -34%;
+  top: 0;
+  padding: 1rem 2rem;
+  height: 100vh;
+  width: 30%;
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
+  background-color: rgb(124, 169, 227);
+  border-left: 7px solid rgb(41, 103, 184);
+  color: white;
+  transition: 0.5s all ease;
+}
+
+.open {
+  right: 0%;
+}
+
+.host-panel h3 {
+  display: flex;
+  align-items: center;
+}
+
+.host-panel h3 button {
+  padding: 8px;
+  margin-left: 10px;
+}
+
+.host-panel ul {
+  padding: 0;
+}
+
+.participantDetails {
+  display: flex;
+  align-items: center;
+  list-style-type: none;
+}
+
+.participantDetails button {
+  margin-left: 16px;
+  background-color: rgb(225, 73, 73);
+  color:rgb(255, 255, 255);
+  padding: 8px;
+}

@@ -16,10 +16,18 @@
         <input type='text' id='identity' placeholder='Enter your name' required>
         <button id='button-join'>Join Room</button>
         <button id='button-leave' disabled>Leave Room</button>
+        <button id='button-panel-toggle' disabled>Toggle Host Panel</button>
     </section>
 
     <section id='status'>
       <div id='status-message'></div>
+    </section>
+
+    <section id='admin-controls'>
+      <div class='host-panel'>
+        <h3>Participants <button id='button-panel-close'>Close</button></h3>
+        <ul id='participants'></ul>
+      </div>
     </section>
 
   </body>
